@@ -1,6 +1,23 @@
 name: Build ZMK firmware
+
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
-    uses: zmkfirmware/zmk/.github/workflows/build-user-config.yml@main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Fetch Build Keyboards
+        run: |
+          pip3 install pyyaml
+          python3 .github/scripts/generate-matrix.py config/build.yaml > build-matrix.json
+
+      - name: Build
+        uses: zmkfirmware/zmk/.github/actions/build@main
+        with:
+          matrix-path: build-matrix.json
+
+      - name: Merge Output Artifacts
+        uses: zmkfirmware/zmk/.github/actions/artifact-merge@main
